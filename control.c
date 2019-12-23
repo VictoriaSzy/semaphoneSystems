@@ -12,12 +12,12 @@
 
 #define KEY 24601
 
-union semun {
+/*union semun {
   int val ;
   struct semid_ds *buf ;
   unsigned short *array ;
   struct seminfo *__buf ;
-} ;
+} ;*/
 
 // command line argument: -c
 int create() {
@@ -51,14 +51,14 @@ int create() {
 }
 
 // command line argument: -r
-int remove() {
+int rem() {
+  printf("We are going to remove the story!\n") ;
   int semd = semget(KEY, 1, 0) ;
-  struct sembuf sb = calloc(sizeof(struct sembuf), 1) ;
+  struct sembuf sb ;
   sb.sem_num = 0 ;
   sb.sem_op = -1 ;
   sb.sem_flg = SEM_UNDO ;
-  int sems = semop(semd, sb, 1) ;
-  free(sb) ;
+  int sems = semop(semd, &sb, 1) ;
 
   // show the story
   int fd = open("story.txt", O_RDONLY) ;
@@ -102,6 +102,29 @@ int view() {
   return 0 ;
 }
 
-int main() {
+int main(int argc, char * argv[]) {
+  if (argc == 1) {
+    printf("Please enter a flag to determine what you want to do!\n") ;
+    printf("-c will create a story\n") ;
+    printf("-r will allow you to remove the story\n") ;
+    printf("-v will allow you to view the story\n") ;
+    return 1 ;
+  }
+  if (strcmp(argv[1], "-c") == 0) {
+    if (create() != 0) return 1 ;
+  }
+  else if (strcmp(argv[1], "-r") == 0) {
+    if (rem() != 0) return 1 ;
+  }
+  else if (strcmp(argv[1], "-v") == 0) {
+    if (view() != 0) return 1 ;
+  }
+  else {
+    printf("Please enter a flag to determine what you want to do!\n") ;
+    printf("-c will create a story\n") ;
+    printf("-r will allow you to remove the story\n") ;
+    printf("-v will allow you to view the story\n") ;
+    return 1 ;
+  }
   return 0 ;
 }
