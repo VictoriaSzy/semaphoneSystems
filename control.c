@@ -88,6 +88,19 @@ int remove() {
   return 0 ;
 }
 
+// command line argument: -v
+int view() {
+  int fd = open("story.txt", O_RDONLY) ;
+  char * story = calloc(sizeof(char), 20480) ;
+  int r = read(fd, story, 20479) ;
+  if (r == -1) {
+    printf("Error: %s\n", strerror(errno)) ;
+    return -1 ;
+  }
+  printf("Story: \n%s\n", story) ;
+  free(story) ;
+  return 0 ;
+}
 
 int main() {
   return 0 ;
