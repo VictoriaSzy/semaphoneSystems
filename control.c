@@ -9,3 +9,12 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
+
+#define KEY 24601
+
+union semun {
+  int val ;
+  struct semid_ds *buf ;
+  unsigned short *array ;
+  struct seminfo *__buf ;
+} ;
