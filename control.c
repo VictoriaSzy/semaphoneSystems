@@ -11,6 +11,7 @@
 #include <sys/sem.h>
 
 #define KEY 24601
+#define KEY2 23461
 
 /*union semun {
   int val ;
@@ -22,38 +23,38 @@
 // command line argument: -c
 int create() {
   printf("We are going to create the story now!\n") ;
+  int semd = semget(KEY2, 1, IPC_CREAT | IPC_EXCL | 0644) ;
+  if (semd == -1) {
+    printf("Error: %s\n", strerror(errno)) ;
+    return -1 ;
+  }
+  printf("Semaphore created\n") ;
+
+  union semun us ;
+  us.val = 1 ;
+  int r = semctl(semd, 0, SETVAL, us) ;
+
   int shmid = shmget(KEY, sizeof(int), 0644 | IPC_CREAT) ;
   if (shmid == -1) {
     printf("Error with creating shared memory!: %s\n", strerror(errno)) ;
     return -1 ;
   }
+  printf("Shared memory created\n") ;
 
-  int fd = open("story.txt", O_CREAT | O_TRUNC, 0644) ;
+  int fd = open("story.txt", O_CREAT | O_TRUNC | O_RDWR, 0644) ;
   if (fd == -1) {
     printf("Error: %s\n", strerror(errno)) ;
     return -1 ;
   }
-
-  int semd = semget(KEY, 1, IPC_CREAT | IPC_EXCL | 0644) ;
-  if (semd == -1) {
-    printf("Error: %s\n", strerror(errno)) ;
-    return -1 ;
-  }
-
-  union semun us ;
-  us.val = 1 ;
-  int r = semctl(semd, 0, SETVAL, us) ;
-  if (r == -1) {
-    printf("Error: %s\n", strerror(errno)) ;
-    return -1 ;
-  }
+  printf("File created\n") ;
+  close(fd) ;
   return 0 ;
 }
 
 // command line argument: -r
 int rem() {
   printf("We are going to remove the story!\n") ;
-  int semd = semget(KEY, 1, 0) ;
+  int semd = semget(KEY2, 1, 0) ;
   struct sembuf sb ;
   sb.sem_num = 0 ;
   sb.sem_op = -1 ;
@@ -64,7 +65,7 @@ int rem() {
   int fd = open("story.txt", O_RDONLY) ;
   char * story = calloc(sizeof(char), 20480) ;
   read(fd, story, 20479) ;
-  printf("Story:\n%s\n", story) ;
+  printf("Here is the story:\n%s\n", story) ;
   free(story) ;
 
   int shmd = shmget(KEY, sizeof(int), 0) ;
@@ -97,7 +98,7 @@ int view() {
     printf("Error: %s\n", strerror(errno)) ;
     return -1 ;
   }
-  printf("Story: \n%s\n", story) ;
+  printf("Here is the story: \n%s\n", story) ;
   free(story) ;
   return 0 ;
 }
